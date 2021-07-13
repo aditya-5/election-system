@@ -1,0 +1,53 @@
+.inline{
+  display:inline-block;
+  padding-top:7px;
+  margin-right:10px
+}
+
+.linkCol{
+  color:black
+}
+
+.trans:hover{
+  transition: all .2s ease-in-out;
+  transform: scale(1.1);
+}
+
+.brandtitle{
+  margin-right:25px
+}
+
+
+.active{
+  font-weight: 900;
+
+}
+
+
+@media (max-width: 576px) {
+  .inline{
+    margin-right:10px
+  }
+
+  .middle-padding{
+    padding:11px
+
+  }
+
+  .nav-link{
+    padding:5px
+
+  }
+
+  .nav{
+    font-size: 0.8em
+  }
+}
+
+@media (max-width: 992px) {
+  .justify-content-center-custom{
+    display: flex;
+   justify-content: center;
+  }
+
+}
