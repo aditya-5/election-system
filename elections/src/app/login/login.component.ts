@@ -1,8 +1,9 @@
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute} from '@angular/router';
 import { SignupService } from "../signup/signup.service";
 import { LoginService } from "./login.service";
+
 
 @Component({
   selector: 'app-login',
@@ -21,8 +22,20 @@ export class LoginComponent implements OnInit {
   constructor(private signupservice: SignupService,
     private renderer: Renderer2,
     private authenticationService: LoginService,
-    private router: Router
+    private router: Router,
+    private activatedRoute:ActivatedRoute,
   ) {
+    activatedRoute.queryParams.subscribe(queryParams=>{
+      if(queryParams.token && queryParams.type){
+        authenticationService.verifyAccount(queryParams.token, queryParams.type)
+        .subscribe(response=>{
+            this.appendSuccessMessages(response["message"])
+        }, err=>{
+          this.appendErrorMessages(err.error.message)
+
+        })
+      }
+    })
   }
 
   ngOnInit(): void {

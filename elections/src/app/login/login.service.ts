@@ -89,4 +89,10 @@ export class LoginService {
 
 
 
+  verifyAccount(token: string, type: string){
+    return this.http.post(environment.baseURL+"auth/verify", {token, type})
+  }
+
+
+
 }
