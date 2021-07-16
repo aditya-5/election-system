@@ -53,7 +53,7 @@ export class SignupComponent implements OnInit {
       err => {
         this.submitted = false;
         setTimeout(() => {
-          this.appendErrorMessages(err.error.message)
+          this.appendErrorMessages(err.error.message || "Some error occurred at the backend. Please try again later.")
           this.societyForm.form.patchValue({
             email: societyUser.email,
             societyName: societyUser.societyName,
