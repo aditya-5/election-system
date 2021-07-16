@@ -1,5 +1,7 @@
+
 export const environment = {
   production: true,
+  baseURL: "http://localhost:3000/",
   firebaseConfig : {
     apiKey: "AIzaSyByWzX-WaULsC7J1CBjP-omROIXgNwdB0Y",
     authDomain: "election-system-db247.firebaseapp.com",
@@ -9,6 +11,6 @@ export const environment = {
     messagingSenderId: "629690985467",
     appId: "1:629690985467:web:097102df60269720fbf95e",
     measurementId: "G-8D9081QGKB"
-  }
-
+  },
+  host: "http://localhost:4200/"
 };
