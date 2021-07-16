@@ -8,6 +8,7 @@ const session = require('express-session')
 const passport = require('passport')
 const mongoose = require('mongoose')
 const KEYS = require("./config/keys");
+const path = require("path");
 
 
 app.use(express.static(__dirname + '/public'))
@@ -41,12 +42,29 @@ app.use(function(req, res, next) {
   next();
 });
 
-
 app.use("/auth", require("./routes/auth"))
 
+// app.get('/hello', function(req, res) {
+//   res.send('hello');
+// });
+
 app.get('/*', function(req, res) {
-  res.sendFile(path.join(__dirname + '/public/index.html'));
+  try{
+    res.sendFile(path.join(__dirname + '/public/index.html'), null, err=>{
+         if(err){
+           res.send("Static Angular File Not Found")
+         }
+       });
+  }catch{
+    res.send("Static Angular File Not Found")
+  }
 });
+
+
+
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`)
