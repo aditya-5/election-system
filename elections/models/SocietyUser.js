@@ -28,6 +28,17 @@ const SocietyUserSchema  = new mongoose.Schema({
   societyName:{
     type:String,
     required: true
+  },
+  type:{
+    type:String,
+    default: "society"
+  },
+  isVerified:{
+    type:Boolean,
+    default:false
+  },
+  verifyToken:{
+    type:String,
   }
 })
 
