@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from "@angular/fire/auth";
-import { Observable, throwError } from 'rxjs';
-import firebase from 'firebase/app';
+import { Observable } from 'rxjs';
 import { environment } from "../../environments/environment"
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
-import { catchError } from 'rxjs/operators';
+import {AuthenticateService} from "../common/authenticate.service"
+// import { CookieService } from 'ngx-cookie-service';
+// import { catchError } from 'rxjs/operators';
+// import {  throwError } from 'rxjs';
+// import firebase from 'firebase/app';
+// import { AngularFireAuth } from "@angular/fire/auth";
 
 
 @Injectable({
@@ -14,18 +16,21 @@ import { catchError } from 'rxjs/operators';
 })
 export class LoginService {
 
-  constructor(private angularFireAuth: AngularFireAuth,
+  constructor(
     private http: HttpClient,
     private router: Router,
-    private cookieService: CookieService) {
-    angularFireAuth.authState.subscribe(user => {
-      console.log(user)
-      if (user) {
-        user.getIdToken().then(id => console.log(id))
-      }
-    })
-  }
+      private authenticateservice : AuthenticateService
+) {}
 
+
+  // private angularFireAuth: AngularFireAuth
+  // private cookieService: CookieService
+  // angularFireAuth.authState.subscribe(user => {
+  //   console.log(user)
+  //   if (user) {
+  //     user.getIdToken().then(id => console.log(id))
+  //   }
+  // })
   // Legacy signin
   // SignIn(email: string, password: string) {
   //   return this.angularFireAuth
@@ -50,43 +55,59 @@ export class LoginService {
   //     });
   // }
 
-  SignIn(email: string, password: string) {
-    return this.angularFireAuth.setPersistence('none').then(() => {
-      return this.angularFireAuth
-        .signInWithEmailAndPassword(email, password)
-        .then(async res => {
-          const idToken = await res.user.getIdToken()
-          this.SignOut()
-          return idToken;
-
-        }).catch(err => {
-          throw new Error(err.message)
-        });
-    }
-  )
 
 
-  }
 
-  SignInBackend(idToken) {
-    return this.http.post(environment.baseURL + "auth/sessionLogin", { idToken: idToken },
-    {headers:new HttpHeaders({"credentials": "include", "useCredentials": "true"})})
-  }
+
+  // SignIn(email: string, password: string) {
+  //   return this.angularFireAuth.setPersistence('none').then(() => {
+  //     return this.angularFireAuth
+  //       .signInWithEmailAndPassword(email, password)
+  //       .then(async res => {
+  //         const idToken = await res.user.getIdToken()
+  //         this.SignOut()
+  //         return idToken;
+  //
+  //       }).catch(err => {
+  //         throw new Error(err.message)
+  //       });
+  //   }
+  // )
+  //
+  //
+  // }
+
+  // SignInBackend(idToken) {
+  //   return this.http.post(environment.baseURL + "auth/sessionLogin", { idToken: idToken },
+  //   {headers:new HttpHeaders({"credentials": "include", "useCredentials": "true"})})
+  // }
+
+  // SignOut() {
+  //   this.angularFireAuth
+  //     .signOut();
+  // }
 
   SignOut() {
-    this.angularFireAuth
-      .signOut();
+    this.http.get(environment.baseURL + "auth/logout", {
+      observe:'body',
+      withCredentials:true,
+      headers:new HttpHeaders().append('Content-Type','application/json')
+    }).subscribe(res=>{
+      console.log("Logged out")
+      this.authenticateservice.removeUser();
+    }
+    ,err=>{
+    })
   }
 
-  checkLogIn() {
-       this.http.post(environment.baseURL + "auth/checkLogIn", {}).subscribe(res=>{
-         console.log(res)
-       }
-       ,err=>{
-         console.log(err)
-       })
-  }
 
+  SignIn(email: string, password: string) {
+    return this.http.post(environment.baseURL+"auth/login", {email, password},  {
+      observe:'body',
+      withCredentials:true,
+      headers:new HttpHeaders().append('Content-Type','application/json')
+    })
+  }
 
 
   verifyAccount(token: string, type: string){

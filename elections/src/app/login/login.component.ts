@@ -1,8 +1,8 @@
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router, ActivatedRoute} from '@angular/router';
-import { SignupService } from "../signup/signup.service";
 import { LoginService } from "./login.service";
+import {AuthenticateService} from "../common/authenticate.service"
 
 
 @Component({
@@ -19,15 +19,16 @@ export class LoginComponent implements OnInit {
   @ViewChild('loginF', { static: false }) loginForm: NgForm
 
 
-  constructor(private signupservice: SignupService,
-    private renderer: Renderer2,
-    private authenticationService: LoginService,
+  constructor(private renderer: Renderer2,
+    private loginservice: LoginService,
     private router: Router,
     private activatedRoute:ActivatedRoute,
+      private authenticateservice : AuthenticateService,
   ) {
     activatedRoute.queryParams.subscribe(queryParams=>{
+
       if(queryParams.token && queryParams.type){
-        authenticationService.verifyAccount(queryParams.token, queryParams.type)
+        loginservice.verifyAccount(queryParams.token, queryParams.type)
         .subscribe(response=>{
             this.appendSuccessMessages(response["message"])
         }, err=>{
@@ -35,10 +36,67 @@ export class LoginComponent implements OnInit {
 
         })
       }
+
+      if(queryParams.message && queryParams.type){
+        setTimeout(()=>{
+          if(queryParams.type=="error"){
+            this.appendErrorMessages(queryParams.message)
+          }else if(queryParams.type=="success"){
+            this.appendSuccessMessages(queryParams.message)
+          }
+        }, 2000)
+
+      }
+
+
     })
+
+    if(router.getCurrentNavigation().extras.state){
+      const messageState = router.getCurrentNavigation().extras.state.message
+      const typeState = router.getCurrentNavigation().extras.state.type
+      if(messageState && typeState){
+
+        setTimeout(()=>{
+        if(typeState=="error"){
+          this.appendErrorMessages(messageState)
+        }else if(typeState=="success"){
+          this.appendSuccessMessages(messageState)
+        }
+        }, 2000)
+      }
+    }
+
+
   }
 
   ngOnInit(): void {
+  }
+
+
+  signOut() {
+    this.loginservice.SignOut();
+    this.authenticateservice.removeUser();
+  }
+
+  signIn(loginF: NgForm) {
+    this.submitted = true;
+    const email = loginF.value.email
+    const password = loginF.value.password
+
+    this.loginservice.SignIn(email, password).subscribe(response=>{
+      this.authenticateservice.setUser().subscribe(response=>{
+        this.submitted = false;
+      })
+
+
+    }, err=>{
+      setTimeout(()=>{
+        this.appendErrorMessages(err.error.message)
+        this.loginForm.form.patchValue({email: email})
+      },1000)
+      this.submitted = false;
+    })
+
   }
 
   appendErrorMessages(message) {
@@ -55,22 +113,32 @@ export class LoginComponent implements OnInit {
   }
 
 
-  sendVerificationEmail(linkResendF: NgForm) {
-    this.submitted = true;
-    this.signupservice.sendVerificationEmail(linkResendF.value.email).subscribe(response => {
-      this.submitted = false;
-      setTimeout(() => { this.appendSuccessMessages("New confirmation email sent. Please confirm and login to continue.") }, 1000)
-      linkResendF.reset()
-      this.resendLinkBool = false
-    },
-      err => {
-        setTimeout(() => {
-          this.submitted = false;
-          this.appendErrorMessages(err.error.message)
-          linkResendF.form.patchValue({ email: linkResendF.value.email })
-        }, 1000)
-      })
-  }
+
+  // checkLogIn() {
+  //   this.authenticateservice.getUser().subscribe(response=>{
+  //     console.log(response)
+  //   }, err=>{
+  //     console.log(err.message)
+  //   })
+  // }
+
+
+  // sendVerificationEmail(linkResendF: NgForm) {
+  //   this.submitted = true;
+  //   this.signupservice.sendVerificationEmail(linkResendF.value.email).subscribe(response => {
+  //     this.submitted = false;
+  //     setTimeout(() => { this.appendSuccessMessages("New confirmation email sent. Please confirm and login to continue.") }, 1000)
+  //     linkResendF.reset()
+  //     this.resendLinkBool = false
+  //   },
+  //     err => {
+  //       setTimeout(() => {
+  //         this.submitted = false;
+  //         this.appendErrorMessages(err.error.message)
+  //         linkResendF.form.patchValue({ email: linkResendF.value.email })
+  //       }, 1000)
+  //     })
+  // }
 
   // Legacy signin
 
@@ -78,7 +146,7 @@ export class LoginComponent implements OnInit {
   //   this.submitted = true;
   //   const email = loginF.value.email
   //   const password = loginF.value.password
-  //   const response = await this.authenticationService.SignIn(email, password)
+  //   const response = await this.loginservice.SignIn(email, password)
   //   if(!response.loggedIn){
   //     setTimeout(() => {
   //       this.appendErrorMessages(response.message)
@@ -90,53 +158,49 @@ export class LoginComponent implements OnInit {
   //   this.submitted = false;
   //
   // }
+  //
+  // async signIn(loginF: NgForm) {
+  //   this.submitted = true;
+  //   const email = loginF.value.email
+  //   const password = loginF.value.password
+  //   let idToken
+  //   try{
+  //     idToken = await this.loginservice.SignIn(email, password)
+  //   }catch(err){
+  //     idToken = null;
+  //     this.submitted = false;
+  //     setTimeout(() => {
+  //       this.appendErrorMessages(err.message)
+  //       this.loginForm.form.patchValue({
+  //         email: email,
+  //       })
+  //     }, 2000)
+  //   }
+  //
+  //
+  //   if(idToken!= null){
+  //     this.loginservice.SignInBackend(idToken).subscribe((response) => {
+  //       return this.router.navigate(["/signup"]);
+  //
+  //     }
+  //     , (err) => {
+  //       this.submitted = false;
+  //       setTimeout(() => {
+  //         this.appendErrorMessages("Backend failed to sign you in. Please try again later.")
+  //         this.loginForm.form.patchValue({
+  //           email: email,
+  //         })
+  //       }, 2000)
+  //     }
+  //   )
+  //   }
+  //
+  //
+  // }
+  //
 
-  async signIn(loginF: NgForm) {
-    this.submitted = true;
-    const email = loginF.value.email
-    const password = loginF.value.password
-    let idToken
-    try{
-      idToken = await this.authenticationService.SignIn(email, password)
-    }catch(err){
-      idToken = null;
-      this.submitted = false;
-      setTimeout(() => {
-        this.appendErrorMessages(err.message)
-        this.loginForm.form.patchValue({
-          email: email,
-        })
-      }, 2000)
-    }
+  //
 
-
-    if(idToken!= null){
-      this.authenticationService.SignInBackend(idToken).subscribe((response) => {
-        return this.router.navigate(["/signup"]);
-
-      }
-      , (err) => {
-        this.submitted = false;
-        setTimeout(() => {
-          this.appendErrorMessages("Backend failed to sign you in. Please try again later.")
-          this.loginForm.form.patchValue({
-            email: email,
-          })
-        }, 2000)
-      }
-    )
-    }
-
-
-  }
-
-  signOut() {
-    this.authenticationService.SignOut();
-  }
-
-  checkLogIn() {
-    this.authenticationService.checkLogIn();
-  }
 
 
 
