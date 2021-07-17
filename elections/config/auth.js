@@ -3,8 +3,9 @@ module.exports = {
     if(req.isAuthenticated()){
       return next()
     }else{
-      req.flash('error_msg',"Please login to view this resource")
-      res.redirect("/users/login")
+      res.status(401).json({
+        message:"Not allowed to access this resource. Please login to continue."
+      })
     }
   }
 }
