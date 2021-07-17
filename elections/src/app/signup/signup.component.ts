@@ -86,7 +86,7 @@ export class SignupComponent implements OnInit {
         this.submitted = false;
         setTimeout(() => {
           this.appendErrorMessages(err.error.message|| "Some error occurred at the backend. Please try again later.")
-          this.voterForm.form.patchValue({ email: voterUser.email })
+          this.voterForm.form.patchValue({ email: voterUser.email, fullname: voterUser.fullname })
         }, 1000)
       })
 
