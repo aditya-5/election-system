@@ -7,8 +7,9 @@ const methodOverride = require('method-override')
 const session = require('express-session')
 const passport = require('passport')
 const mongoose = require('mongoose')
-const KEYS = require("./config/keys");
+const KEYS = require("./config/KEYS");
 const path = require("path");
+const cors = require("cors");
 
 
 app.use(express.static(__dirname + '/public'))
@@ -21,7 +22,13 @@ app.use(methodOverride('_method'))
 app.use(session({
   secret: 'hold the door',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
+  cookie:{
+    maxAge:600000,
+    httpOnly:false,
+    secure:false,
+    SameSite:"None"
+  }
 }))
 
 // Passport Middleware
@@ -37,10 +44,15 @@ mongoose.connect(KEYS.MongoURI || process.env.MongoURI , { useUnifiedTopology: t
 
 // CORS enabled
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:4200"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Origin", "http://localhost:4200, http://127.0.0.1:4200"); // update to match the domain you will make the request from
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Credentials", true);
   next();
 });
+app.use(cors({
+  origin:['http://localhost:4200','http://127.0.0.1:4200'],
+  credentials:true
+}))
 
 app.use("/auth", require("./routes/auth"))
 

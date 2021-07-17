@@ -6,10 +6,11 @@ const passport = require('passport')
 const request = require('request');
 const bodyParser = require('body-parser')
 const crypto = require('crypto')
-const KEYS = require("../config/keys");
+const KEYS = require("../config/KEYS");
 const SocietyUser = require("../models/SocietyUser")
 const VoterUser = require("../models/VoterUser")
 const NODE_ENV = process.env.NODE_ENV || "dev"
+const {ensureAuthenticated}= require('../config/auth')
 
 // var admin = require("firebase-admin");
 // var serviceAccount = require("../config/firebaseKEY.json");
@@ -62,6 +63,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+
 // ******************************
 // Email and Name Validations
 // ******************************
@@ -98,6 +100,104 @@ function validateName(nameVal) {
   }
 }
 
+
+// ******************************
+// Login
+// ******************************
+
+router.post("/login", (req, res, next) => {
+const email = req.body.email
+const password = req.body.password
+
+if (!email || !password) {
+  return res.status(401).json({
+    message: "Please fill in all the fields."
+  });
+}
+
+if (password.length < 6) {
+  return res.status(401).json({
+    message: "Please enter a valid password."
+  });
+}
+
+if (!validateEmail(email)) {
+  return res.status(401).json({
+    message: "Invalid Email. Please use a valid UoM Email."
+  });
+}
+
+// Without captcha Login
+passport.authenticate('local', function(err, user, info) {
+
+  if (err) {
+    return res.status(501).json(err);}
+  if (!user) {return res.status(501).json(info);}
+  req.logIn(user, function(err) {
+    if (err) {return res.status(501).json(err);}
+    return res.status(200).json({message: 'Login Success'});
+  });
+})(req, res, next);
+
+
+//
+//
+// if(
+//   req.body.captcha === undefined ||
+//   req.body.captcha === '' ||
+//   req.body.captcha === null
+// ){
+//   return res.json({"success": false, "msg":"wrong captcha"})
+// }
+//
+// const secretKey = process.env.captchaSECRET || require("../config/keys").captchaSECRET;
+// const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=
+// ${secretKey}&response=${req.body.captcha}
+//   &remoteip=${req.connection.remoteAddress}`
+//
+// request(verifyUrl, (err, response, body)=>{
+//   body = JSON.parse(body);
+//
+//   if(body.success !== undefined && !body.success){
+//     return res.json({"success": false, "msg":"Failed captcha"})
+//   }
+//
+//   passport.authenticate('local', {
+//     successRedirect : '/dashboard',
+//     failureRedirect : '/users/login',
+//     failureFlash : true
+//   })(req, res, next)
+//
+//
+// })
+
+
+
+})
+
+// ******************************
+// Get currently logged in user
+// ******************************
+router.get("/user",ensureAuthenticated, (req, res) => {
+  return res.status(200).json({
+    _id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    type: req.user.type,
+    isVerified: req.user.isVerified,
+  })
+})
+
+
+// ******************************
+// Logout
+// ******************************
+router.get("/logout",ensureAuthenticated, (req, res) => {
+  req.logout();
+  return res.status(200).json({
+    message:"Successfully logged out."
+  })
+})
 
 // ******************************
 // Verify the account
