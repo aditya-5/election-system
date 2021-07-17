@@ -11,11 +11,16 @@ import { HttpClientModule } from "@angular/common/http";
 import { AngularFireModule } from "@angular/fire";
 import {environment} from "../environments/environment"
 import { AngularFirestoreModule } from "@angular/fire/firestore";
+import { AuthGuard } from './guards/auth-guard.service';
+import { PortalComponent } from './portal/portal.component';
+import { AuthGuardLoggedIn } from './guards/auth-guard-logged-in.service';
 
  const appRoutes: Routes = [
-   { path: "signup" , component: SignupComponent},
-   { path: "login" , component: LoginComponent},
+   { path: "portal" , component: PortalComponent, canActivate:[AuthGuard]},
+   { path: "signup" , component: SignupComponent, canActivate:[AuthGuardLoggedIn]},
+   { path: "login" , component: LoginComponent, canActivate:[AuthGuardLoggedIn]},
    { path: "" , component: HomeComponent},
+   { path: "**" , redirectTo: "/"},
 ]
 
 @NgModule({
@@ -25,6 +30,7 @@ import { AngularFirestoreModule } from "@angular/fire/firestore";
     HeaderComponent,
     HomeComponent,
     SignupComponent,
+    PortalComponent,
   ],
   imports: [
     BrowserModule,
@@ -34,7 +40,7 @@ import { AngularFirestoreModule } from "@angular/fire/firestore";
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule
   ],
-  providers: [],
+  providers: [AuthGuard, AuthGuardLoggedIn],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

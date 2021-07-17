@@ -14,7 +14,6 @@ export class HomeComponent implements OnInit {
       if(params.token){
         this.router.navigate(['login'], { queryParamsHandling: 'merge' })
       }
-      console.log(params);
     });
    }
 
