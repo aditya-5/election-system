@@ -11,8 +11,13 @@ export class HomeComponent implements OnInit {
   constructor(private activatedRoute: ActivatedRoute,
               private router: Router) {
     this.activatedRoute.queryParams.subscribe((params: Params) => {
-      if(params.token){
-        this.router.navigate(['login'], { queryParamsHandling: 'merge' })
+      if(params.token && params.type){
+        if(params.type=="society"){
+          this.router.navigate(['society'], { queryParamsHandling: 'merge' })
+        }else if(params.type=="voter"){
+          this.router.navigate(['voter'], { queryParamsHandling: 'merge' })
+        }
+
       }
     });
    }
