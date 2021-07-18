@@ -12,7 +12,10 @@ export class AppComponent {
   title = 'elections';
 
   constructor(private authenticateservice : AuthenticateService, private router: Router){
-    this.authenticateservice.setUser().subscribe((resp)=>{})
+    // this.authenticateservice.setUser().subscribe((resp)=>{})
+    this.authenticateservice.autoLogin()
   }
+
+
 
 }

@@ -2,11 +2,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
-import { LoginComponent } from './login/login.component';
+import { VoterComponent } from './voter/voter.component';
 import { Routes, RouterModule } from "@angular/router";
 import { HeaderComponent } from './header/header.component';
 import { HomeComponent } from './home/home.component';
-import { SignupComponent } from './signup/signup.component';
+import { SocietyComponent } from './society/society.component';
 import { HttpClientModule } from "@angular/common/http";
 import { AngularFireModule } from "@angular/fire";
 import {environment} from "../environments/environment"
@@ -17,8 +17,8 @@ import { AuthGuardLoggedIn } from './guards/auth-guard-logged-in.service';
 
  const appRoutes: Routes = [
    { path: "portal" , component: PortalComponent, canActivate:[AuthGuard]},
-   { path: "signup" , component: SignupComponent, canActivate:[AuthGuardLoggedIn]},
-   { path: "login" , component: LoginComponent, canActivate:[AuthGuardLoggedIn]},
+   { path: "society" , component: SocietyComponent, canActivate:[AuthGuardLoggedIn]},
+   { path: "voter" , component: VoterComponent, canActivate:[AuthGuardLoggedIn]},
    { path: "" , component: HomeComponent},
    { path: "**" , redirectTo: "/"},
 ]
@@ -26,10 +26,10 @@ import { AuthGuardLoggedIn } from './guards/auth-guard-logged-in.service';
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
+    VoterComponent,
     HeaderComponent,
     HomeComponent,
-    SignupComponent,
+    SocietyComponent,
     PortalComponent,
   ],
   imports: [
