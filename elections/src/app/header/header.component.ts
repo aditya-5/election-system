@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { LoginService} from "../login/login.service";
 import { AuthenticateService } from "../common/authenticate.service";
 import { map } from 'rxjs/operators';
 
@@ -10,14 +9,14 @@ import { map } from 'rxjs/operators';
 })
 export class HeaderComponent implements OnInit {
 
-  loggedIn : boolean = false;
+  loggedIn: boolean = false;
 
-  constructor(private loginservice: LoginService,
-  private authenticateservice : AuthenticateService) {
-    this.authenticateservice.User.subscribe(userData=>{
-      if(userData){
+  constructor(private authenticateservice: AuthenticateService) {
+    
+    this.authenticateservice.User.subscribe(userData => {
+      if (userData) {
         this.loggedIn = true;
-      }else{
+      } else {
         this.loggedIn = false;
       }
     })
@@ -26,8 +25,8 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  logout(){
-    this.loginservice.SignOut()
+  logout() {
+    this.authenticateservice.SignOut()
   }
 
 }

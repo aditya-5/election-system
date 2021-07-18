@@ -19,10 +19,10 @@
           <a class="nav-link linkCol"  routerLink="/portal">Portal</a>
         </li>
         <li *ngIf="!loggedIn" class="nav-item" routerLinkActive = "active" [routerLinkActiveOptions] = "{exact: true}">
-          <a class="nav-link linkCol" routerLink="/login">Login</a>
+          <a class="nav-link linkCol" routerLink="/voter">Voter</a>
         </li>
         <li *ngIf="!loggedIn" class="nav-item" style="margin:0px" routerLinkActive = "active" [routerLinkActiveOptions] = "{exact: true}">
-          <a class="nav-link linkCol" routerLink="/signup">Signup</a>
+          <a class="nav-link linkCol" routerLink="/society">Society</a>
         </li>
         <li *ngIf="loggedIn" class="nav-item" style="margin:0px" routerLinkActive = "active" [routerLinkActiveOptions] = "{exact: true}">
           <button class="nav-link linkColWhite btn btn-danger btn-sm" (click)="logout()">Logout</button>
