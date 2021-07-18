@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { VoterComponent } from './voter/voter.component';
 import { Routes, RouterModule } from "@angular/router";
@@ -14,6 +14,12 @@ import { AngularFirestoreModule } from "@angular/fire/firestore";
 import { AuthGuard } from './guards/auth-guard.service';
 import { PortalComponent } from './portal/portal.component';
 import { AuthGuardLoggedIn } from './guards/auth-guard-logged-in.service';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatNativeDateModule } from '@angular/material/core';
+
+
 
  const appRoutes: Routes = [
    { path: "portal" , component: PortalComponent, canActivate:[AuthGuard]},
@@ -38,7 +44,13 @@ import { AuthGuardLoggedIn } from './guards/auth-guard-logged-in.service';
     FormsModule,
     HttpClientModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule
+    AngularFirestoreModule,
+    BrowserAnimationsModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatNativeDateModule,
+    ReactiveFormsModule,
+
   ],
   providers: [AuthGuard, AuthGuardLoggedIn],
   bootstrap: [AppComponent]

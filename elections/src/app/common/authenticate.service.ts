@@ -41,8 +41,8 @@ export class AuthenticateService {
   removeUser(auto: boolean = false) {
     this.User.next(null)
     localStorage.removeItem("userData");
-    if(auto) this.router.navigate(['home'], {state:{message:"Session timeout. Please re-login to continue.", type:"error"}})
-    else this.router.navigate(['home'])
+    if(auto) this.router.navigate(['voter'], {state:{message:"Session timeout. Please re-login to continue.", type:"error"}})
+    else this.router.navigate(['voter'])
   }
 
 
@@ -77,7 +77,10 @@ export class AuthenticateService {
         clearTimeout(this.autoLogoutTimer)
       }
       this.autoLogoutTimer = null
-    }, err => {})
+    }, err => {
+      this.removeUser()
+      localStorage.removeItem("userData")
+    })
   }
 
 

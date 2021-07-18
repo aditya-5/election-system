@@ -22,12 +22,12 @@ export class AuthGuard implements CanActivate {
               if(userData.isVerified) return true;
               else{
                 // this.router.navigate(['login'],{queryParams: {"message":"User not verified", type:"error"}})
-                this.router.navigate(['login'], { state: { message: 'User not verified',  type:"error" } })
+                this.router.navigate(['voter'], { state: { message: 'User not verified',  type:"error" } })
                 return false;
               }
             }else{
               // this.router.navigate(['login'],{queryParams: {"message":"You're not allowed to view this resource. Please login to continue.", type:"error"}})
-              this.router.navigate(['login'], { state: { message: "You're not allowed to view this resource. Please login to continue.",  type:"error" } })
+              this.router.navigate(['voter'], { state: { message: "You're not allowed to view this resource. Please login to continue.",  type:"error" } })
               return false;
             }
 
