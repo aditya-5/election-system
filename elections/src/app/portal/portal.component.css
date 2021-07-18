@@ -167,7 +167,31 @@ select{
 .red{
   color:red;
 }
+.mat-focused .mat-form-field-label {
+ /*change color of label*/
+ color: black !important;
+}
 
-md-datepicker.md-default-theme, md-datepicker {
-    background: rgb(255,255,255);
+.mat-form-field-underline {
+ /*change color of underline*/
+ background-color: black !important;
+}
+
+.mat-form-field-ripple {
+ /*change color of underline when focused*/
+ background-color: black !important;;
+}
+
+ .mat-form-field-label {
+ /*change color of label*/
+ color: black !important;
+}
+
+mat-date-range-input input {
+  color: black !important;
+}
+
+
+mat-datepicker-toggle {
+ color: black !important;
 }

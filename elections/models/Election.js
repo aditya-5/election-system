@@ -22,10 +22,23 @@ const ElectionSchema  = new mongoose.Schema({
     type:String,
     required: true
   },
-  date:{
+  dateAdded:{
     type:Date,
     default: Date.now
+  },
+  start:{
+    type:String,
+    required: true
+  },
+  end:{
+    type:String,
+    required: true
+  },
+  live:{
+    type:Boolean,
+    default: false
   }
+
 
 })
 

@@ -42,13 +42,13 @@ Welcome {{userData.name}} to Electal.
 
 
         <div class="mb-3 row">
-          <label for="category" class="col-sm-2 col-form-label">Polling Period</label>
+          <label for="category" class="col-sm-2 col-form-label ">Polling Period</label>
           <div class="col-sm-10">
             <div >
-                <mat-form-field appearance="fill">
-                  <mat-label >Select polling dates</mat-label>
-                  <mat-date-range-input [formGroup]="range" [rangePicker]="picker" >
-                    <input matStartDate formControlName="start" placeholder="Start date" style="color:white; ">
+                <mat-form-field appearance="fill" color = "accent" >
+                  <mat-label style="color:black; ">Select polling dates</mat-label>
+                  <mat-date-range-input [min]="minDate" [formGroup]="range" [rangePicker]="picker" >
+                    <input matStartDate formControlName="start"  placeholder="Start date" style="color:white; ">
                     <input matEndDate formControlName="end" placeholder="End date" style="color:white; ">
                   </mat-date-range-input>
                   <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
@@ -57,8 +57,6 @@ Welcome {{userData.name}} to Electal.
                   <mat-error *ngIf="range.controls.start.hasError('matStartDateInvalid')">Invalid start date</mat-error>
                   <mat-error *ngIf="range.controls.end.hasError('matEndDateInvalid')">Invalid end date</mat-error>
                 </mat-form-field>
-                <p>Selected range: {{range.value | json}}</p>
-
                 </div>
 
           </div>

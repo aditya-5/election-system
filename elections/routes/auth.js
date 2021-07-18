@@ -13,6 +13,8 @@ const Election = require("../models/Election")
 const NODE_ENV = process.env.NODE_ENV || "dev"
 const {ensureAuthenticated}= require('../config/auth')
 
+
+
 // var admin = require("firebase-admin");
 // var serviceAccount = require("../config/firebaseKEY.json");
 // const cookieParser = require("cookie-parser")
@@ -822,6 +824,21 @@ router.post("/signup/voter", (req, res) => {
 router.post("/addElection",ensureAuthenticated, (req, res) => {
   let categories = req.body.categories
   let candidates = req.body.candidates
+  let start = req.body.start
+  let end = req.body.end
+
+  if(!start || !end){
+    return res.status(424).json({
+          message: "Polling period cannot be null. Please try again."
+    });
+  }
+
+  if(new Date(start).getDate()< new Date().getDate() || new Date(end).getDate()< new Date().getDate()){
+    return res.status(424).json({
+          message: "Polling date cannot be in the past. Please try again."
+    });
+  }
+
 
   for(let i=0;i<categories.length;i++){
     categories[i] = firstLetterCapitalize(categories[i])
@@ -853,10 +870,13 @@ router.post("/addElection",ensureAuthenticated, (req, res) => {
                       society: req.user.societyName,
                       categories:categories,
                       candidates:candidates,
-                      tag : crypto.randomBytes(12).toString("hex")})
+                      tag : crypto.randomBytes(12).toString("hex"),
+                      start: start,
+                      end: end})
 
   newElection.save().then(user=>{
     if(user){
+      console.log(user)
       return res.status(200).json({
             message: "Election has been created."
           });

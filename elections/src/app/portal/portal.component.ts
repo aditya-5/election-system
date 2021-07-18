@@ -15,6 +15,8 @@ export class PortalComponent implements OnInit {
   categoryNames: string[] = []
   candidateInfo = []
   submitted:boolean = false;
+  minDate = new Date();
+
   @ViewChild('Messages', { static: false }) Messages: ElementRef
   range = new FormGroup({
     start: new FormControl(),
@@ -85,9 +87,21 @@ removeCandidate(i: number){
   }
 
   createElection(electionF: NgForm){
+
     this.submitted = true
+
+
     console.log(this.categoryNames)
     console.log(this.candidateInfo)
+
+    // Check input dates
+    if(this.range.value.start==null || this.range.value.end==null){
+      setTimeout(()=>{
+        this.submitted = false
+        this.appendErrorMessages("Please select the polling period.")
+      }, 1000)
+      return
+    }
 
     // Check if categories have been populated
     if(this.categoryNames.length<1){
@@ -149,8 +163,7 @@ removeCandidate(i: number){
       }
     }
 
-    const electionData = {categories: this.categoryNames, candidates: this.candidateInfo}
-
+    const electionData = {categories: this.categoryNames, candidates: this.candidateInfo, start:this.range.value.start,  end: this.range.value.end }
 
     this.portalservice.addElection(electionData).subscribe(response=>{
       this.candidateInfo = []
