@@ -105,7 +105,7 @@ function validateName(nameVal) {
 // Login
 // ******************************
 
-router.post("/login", (req, res, next) => {
+router.post("/login/:type", (req, res, next) => {
 const email = req.body.email
 const password = req.body.password
 
@@ -126,18 +126,36 @@ if (!validateEmail(email)) {
     message: "Invalid Email. Please use a valid UoM Email."
   });
 }
-
 // Without captcha Login
-passport.authenticate('local', function(err, user, info) {
-
-  if (err) {
-    return res.status(501).json(err);}
-  if (!user) {return res.status(501).json(info);}
-  req.logIn(user, function(err) {
-    if (err) {return res.status(501).json(err);}
-    return res.status(200).json({message: 'Login Success'});
+if(req.params.type=="voter"){
+  passport.authenticate('voter-local', function(err, user, info) {
+    if (err) {
+      return res.status(501).json(err);}
+    if (!user) {return res.status(501).json(info);}
+    req.logIn(user, function(err) {
+      if (err) {return res.status(501).json(err);}
+      return res.status(200).json({message: 'Login Success'});
+    });
+  })(req, res, next);
+}else if(req.params.type=="society"){
+  passport.authenticate('society-local', function(err, user, info) {
+    if (err) {
+      return res.status(501).json(err);}
+    if (!user) {return res.status(501).json(info);}
+    req.logIn(user, function(err) {
+      if (err) {return res.status(501).json(err);}
+      return res.status(200).json({message: 'Login Success'});
+    });
+  })(req, res, next);
+}else{
+  return res.status(401).json({
+    message: "Invalid Login API. Please try again."
   });
-})(req, res, next);
+}
+
+
+
+
 
 
 //
@@ -179,13 +197,237 @@ passport.authenticate('local', function(err, user, info) {
 // Get currently logged in user
 // ******************************
 router.get("/user",ensureAuthenticated, (req, res) => {
-  return res.status(200).json({
-    _id: req.user._id,
-    name: req.user.name,
-    email: req.user.email,
-    type: req.user.type,
-    isVerified: req.user.isVerified,
-  })
+  if(req.user.type=="voter"){
+    return res.status(200).json({
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      type: req.user.type,
+      isVerified: req.user.isVerified,
+    })
+  }else if(req.user.type=="society"){
+    return res.status(200).json({
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      type: req.user.type,
+      isVerified: req.user.isVerified,
+      societyName: req.user.societyName,
+      position: req.user.position,
+      positionText: req.user.positionText,
+    })
+  }
+
+})
+
+
+// ******************************
+// Get currently logged in user
+// ******************************
+router.post("/resend", (req, res) => {
+
+  const email = req.body.email
+  const type = req.body.type
+
+
+  if (!email) {
+    return res.status(401).json({
+      message: "Email cannot be empty"
+    });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(401).json({
+      message: "Invalid Email. Please use a valid UoM Email."
+    });
+  }
+
+  if(type == "voter"){
+                  VoterUser.findOne({email:email})
+                  .then(user=>{
+                    if(!user){
+                      return res.status(401).json({
+                        message: "No account found with that email address."
+                      });
+                    }else{
+                      if(user.isVerified){
+                        return res.status(401).json({
+                          message: "The account has already been verified. Please login to continue."
+                        });
+                      }else{
+                        const verifyToken = crypto.randomBytes(64).toString("hex")
+                        VoterUser.updateOne({email:email}, { $set : { verifyToken: verifyToken}})
+                        .then(user=>{
+                          if(!user){
+                            console.log("Voter user found with the email address but couldn't save the new token.")
+                            return res.status(401).json({
+                              message: "An error occured at the backend. Please try again later."
+                            });
+                          }else{
+
+
+
+
+                            const html = `<h1>
+                                      Electal : Verify Your Account (Voter)
+                                    </h1>
+                                    Welcome to Electal : A portal that can be used to hold society elections with ease.
+                                    <p>
+                                      Please use the following confirmation link to verify your account.
+                                    </p>
+                                    <a href='${KEYS[NODE_ENV].host}?token=${verifyToken}&type=voter'>Click here to Verify</a>
+                                    <p>
+                                      Incase the above hyperlink doesn't work, please manually copy and paste the following URL into your browser
+                                    </p>
+                                    <p> ${KEYS[NODE_ENV].host}?token=${verifyToken}&type=voter</p>
+                                    <p>
+                                      Incase of an expired or an invalid link, please request another confirmation link.
+                                    </p>
+                                    Regards,
+                                    <p>
+                                      Team Electal
+                                    </p>`
+                            var message = {
+                              from: "contact@adityagarwal.co",
+                              to: email,
+                              subject: "Electal : Verify Your Account",
+                              text: "Your verification token is : " + verifyToken,
+                              html: html
+                            };
+
+
+                            transporter.sendMail(message, (err, info) => {
+                              if (err) {
+                                console.log("Token updated but failed to send new verification email for the user :" + email)
+                                res.status(401).json({
+                                  message: "New link generated, but could not send the verification email. Please contact us for assitance."
+                                })
+                              } else {
+                                console.log("Updated the token for the user :" + email)
+                                return res.status(200).json({
+                                  message: "New verification email sent. Please confirm your email and login to continue."
+                                });
+                              }
+                            })
+
+
+                          }
+                        })
+                        .catch(err=>{
+                          console.log("Couldn't execute the Update query for new verification link for the user : "+ email)
+                          return res.status(401).json({
+                            message: "An error occured at the backend. Please try again later."
+                          });
+                        })
+                      }
+                    }
+                  }).catch(err=>{
+                    console.log("Couldn't execute the findOne query for new verification link for the user : "+ email)
+                    return res.status(401).json({
+                      message: "An error occured at the backend. Please try again later."
+                    });
+                  })
+
+
+
+  }else if(type == "society"){
+
+
+                    SocietyUser.findOne({email:email})
+                    .then(user=>{
+                      if(!user){
+                        return res.status(401).json({
+                          message: "No account found with that email address."
+                        });
+                      }else{
+                        if(user.isVerified){
+                          return res.status(401).json({
+                            message: "The account has already been verified. Please login to continue."
+                          });
+                        }else{
+                          const verifyToken = crypto.randomBytes(64).toString("hex")
+                          SocietyUser.updateOne({email:email}, { $set : { verifyToken: verifyToken}})
+                          .then(user=>{
+                            if(!user){
+                              console.log("Voter user found with the email address but couldn't save the new token.")
+                              return res.status(401).json({
+                                message: "An error occured at the backend. Please try again later."
+                              });
+                            }else{
+
+
+                              const html = `<h1>
+                                        Electal : Verify Your Account (Society)
+                                      </h1>
+                                      Welcome to Electal : A portal that can be used to hold society elections with ease.
+                                      <p>
+                                        Please use the following confirmation link to verify your account.
+                                      </p>
+                                      <a href='${KEYS[NODE_ENV].host}?token=${verifyToken}&type=voter'>Click here to Verify</a>
+                                      <p>
+                                        Incase the above hyperlink doesn't work, please manually copy and paste the following URL into your browser
+                                      </p>
+                                      <p> ${KEYS[NODE_ENV].host}?token=${verifyToken}&type=voter</p>
+                                      <p>
+                                        Incase of an expired or an invalid link, please request another confirmation link.
+                                      </p>
+                                      Regards,
+                                      <p>
+                                        Team Electal
+                                      </p>`
+                              var message = {
+                                from: "contact@adityagarwal.co",
+                                to: email,
+                                subject: "Electal : Verify Your Account",
+                                text: "Your verification token is : " + verifyToken,
+                                html: html
+                              };
+
+
+                              transporter.sendMail(message, (err, info) => {
+                                if (err) {
+                                  console.log("Token updated but failed to send new verification email for the user :" + email)
+                                  res.status(401).json({
+                                    message: "New link generated, but could not send the verification email. Please contact us for assitance."
+                                  })
+                                } else {
+                                  console.log("Updated the token for the user :" + email)
+                                  return res.status(200).json({
+                                    message: "New verification email sent. Please confirm your email and login to continue."
+                                  });
+                                }
+                              })
+
+
+                            }
+                          })
+                          .catch(err=>{
+                            console.log("Couldn't execute the Update query for new verification link for the user : "+ email)
+                            return res.status(401).json({
+                              message: "An error occured at the backend. Please try again later."
+                            });
+                          })
+                        }
+                      }
+                    }).catch(err=>{
+                      console.log("Couldn't execute the findOne query for new verification link for the user : "+ email)
+                      return res.status(401).json({
+                        message: "An error occured at the backend. Please try again later."
+                      });
+                    })
+
+
+
+  }else{
+    return res.status(401).json({
+      message: "Illegal resend verification email API endpoint."
+    });
+  }
+
+
+
+
+
 })
 
 
@@ -260,6 +502,11 @@ router.post("/verify", (req, res) => {
           message: "An error occurred at the backend. Please try again later."
         })
       })
+  }else{
+    return res.status(424).json({
+      verified: "failed",
+      message: "Invalid token"
+    })
   }
 
 
@@ -356,7 +603,7 @@ router.post("/signup/society", (req, res) => {
                         <p>
                           Incase the above hyperlink doesn't work, please manually copy and paste the following URL into your browser
                         </p>
-                        <p> ${KEYS[NODE_ENV].host}?token=${newSocietyUser.verifyToken}&type=voter</p>
+                        <p> ${KEYS[NODE_ENV].host}?token=${newSocietyUser.verifyToken}&type=society</p>
                         <p>
                           Incase of an expired or an invalid link, please request another confirmation link.
                         </p>
@@ -514,7 +761,6 @@ router.post("/signup/voter", (req, res) => {
             newVoterUser.password = hash
             newVoterUser.verifyToken = crypto.randomBytes(64).toString("hex")
             newVoterUser.save().then(user => {
-
 
 
               const html = `<h1>

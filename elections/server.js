@@ -24,7 +24,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie:{
-    maxAge:600000,
+    maxAge:60*60*1000,
     httpOnly:false,
     secure:false,
     SameSite:"None"
@@ -32,7 +32,10 @@ app.use(session({
 }))
 
 // Passport Middleware
-require("./config/passport")(passport)
+require("./config/passport").societyLocal(passport)
+require("./config/passport").voterLocal(passport)
+
+
 app.use(passport.initialize());
 app.use(passport.session());
 
