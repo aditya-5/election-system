@@ -9,6 +9,7 @@ const crypto = require('crypto')
 const KEYS = require("../config/KEYS");
 const SocietyUser = require("../models/SocietyUser")
 const VoterUser = require("../models/VoterUser")
+const Election = require("../models/Election")
 const NODE_ENV = process.env.NODE_ENV || "dev"
 const {ensureAuthenticated}= require('../config/auth')
 
@@ -818,6 +819,60 @@ router.post("/signup/voter", (req, res) => {
     })
 })
 
+router.post("/addElection",ensureAuthenticated, (req, res) => {
+  let categories = req.body.categories
+  let candidates = req.body.candidates
+
+  for(let i=0;i<categories.length;i++){
+    categories[i] = firstLetterCapitalize(categories[i])
+  }
+
+
+  for(let i=0;i<candidates.length;i++){
+    candidates[i].name = firstLetterCapitalize(candidates[i].name)
+    candidates[i].course = firstLetterCapitalize(candidates[i].course)
+    candidates[i].category = firstLetterCapitalize(candidates[i].category)
+  }
+
+  categories = categories.filter(item => item);
+  candidates = candidates.filter(item => item.name && item.category);
+
+
+  for(let i=0;i<candidates.length;i++){
+    if(categories.includes(candidates[i].category)){
+      continue;
+    }else{
+      return res.status(424).json({
+            message: "Category mismatch between the candidates and categories. Please check your inputs."
+      });
+    }
+  }
+  console.log(req.user)
+  const newElection = new Election({hostId: req.user._id,
+                      term:"2021-22",
+                      society: req.user.societyName,
+                      categories:categories,
+                      candidates:candidates,
+                      tag : crypto.randomBytes(12).toString("hex")})
+
+  newElection.save().then(user=>{
+    if(user){
+      return res.status(200).json({
+            message: "Election has been created."
+          });
+    }else{
+      return res.status(424).json({
+            message: "Failed to create a new Election. Please try again later."
+          });
+    }
+  }).catch(err=>{
+    console.log(err)
+    return res.status(424).json({
+          message: "Failed to create a new Election. Please try again later."
+        });
+  })
+
+})
 
 
 //
