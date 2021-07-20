@@ -3,6 +3,7 @@
 
 <head>
 </head>
+<app-header ></app-header>
 
 <body>
 
@@ -82,7 +83,7 @@
           <div class="col-md-12 col-sm-12 col-xs-12 user-login-box">
             <div class="form-group mb-2">
               <input type="text" class="form-control" placeholder="Society Name" #societyName='ngModel' name="societyName" ngModel required>
-              <span *ngIf="societyName.touched && societyName.invalid" class='help-block'>Society Name is required.</span>
+              <span *ngIf="societyName.touched && societyName.invalid" class='help-block'>Society Name is required. (< 30 characters)</span>
             </div>
             <div class="form-group mb-2">
               <input type="text" class="form-control" placeholder="Full Name" maxlength=20 #fullname='ngModel' name="fullname" ngModel required>
@@ -94,7 +95,7 @@
             </div>
             <div class="form-group mb-2">
               <input type="password" class="form-control" placeholder="Password" #password='ngModel' name="password" ngModel required>
-              <span *ngIf="password.touched && password.invalid" class='help-block'>Password is required.</span>
+              <span *ngIf="password.touched && password.invalid" class='help-block'>Password is required.  (> 6 characters)</span>
             </div>
             <div class="form-group mb-2">
               <input type="password" class="form-control" placeholder="Confirm Password" #confirmpassword='ngModel' name="confirmpassword" ngModel required>
@@ -102,15 +103,15 @@
             </div>
             <div class="mb-3">
               <div class="form-check form-check-inline">
-                <input class="form-check-input" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio1" value="president" ngModel required #position='ngModel'>
+                <input class="form-check-input" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio1" value="President" ngModel required #position='ngModel'>
                 <label class="form-check-label" for="inlineRadio1">President</label>
               </div>
               <div class="form-check form-check-inline">
-                <input class="form-check-input" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio2" value="gensec" ngModel>
+                <input class="form-check-input" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio2" value="General Secretary" ngModel>
                 <label class="form-check-label" for="inlineRadio2">General Secretary</label>
               </div>
               <div class="form-check form-check-inline">
-                <input class="form-check-input" (click)='togglePosition(true)' type="radio" name="position" id="inlineRadio3" value="other" ngModel>
+                <input class="form-check-input" (click)='togglePosition(true)' type="radio" name="position" id="inlineRadio3" value="Other" ngModel>
                 <label class="form-check-label" for="inlineRadio3">Other</label>
               </div>
             </div>
