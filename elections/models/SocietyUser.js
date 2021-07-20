@@ -25,10 +25,11 @@ const SocietyUserSchema  = new mongoose.Schema({
     type:String,
     required: false
   },
-  societyName:{
-    type:String,
-    required: true
-  },
+  // societyName:{
+  //   type:String,
+  //   required: true
+  // },
+  society:[ mongoose.Schema.Types.Mixed],
   type:{
     type:String,
     default: "society"
