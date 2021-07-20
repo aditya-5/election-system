@@ -12,7 +12,7 @@
     </ul>
 
       <ul class="nav">
-        <li class="nav-item" routerLinkActive = "active" [routerLinkActiveOptions] = "{exact: true}">
+        <li class="nav-item" *ngIf="!loggedIn" routerLinkActive = "active" [routerLinkActiveOptions] = "{exact: true}">
           <a class="nav-link linkCol"  routerLink="/">Home</a>
         </li>
         <li *ngIf="loggedIn" class="nav-item" routerLinkActive = "active" [routerLinkActiveOptions] = "{exact: true}">
