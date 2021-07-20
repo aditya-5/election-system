@@ -15,35 +15,6 @@ const {ensureAuthenticated}= require('../config/auth')
 
 
 
-// var admin = require("firebase-admin");
-// var serviceAccount = require("../config/firebaseKEY.json");
-// const cookieParser = require("cookie-parser")
-// const csrf = require("csurf")
-
-// router.use(cookieParser())
-// router.use(csrf({cookie : true}))
-//
-// router.all("*", (req, res, next)=>{
-//   res.cookie("XSRF-TOKEN", req.csrfToken())
-//   next()
-// })
-//
-//  // firebase
-
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-//   databaseURL: "https://election-system-db247-default-rtdb.europe-west1.firebasedatabase.app"
-// });
-
-// Initialize Firebase database
-// var db = admin.database();
-// const ref = db.ref("users")
-
-
-// const actionCodeSettings = {
-//   url: 'http://localhost:4200/signup',
-//   handleCodeInApp: true,
-// };
 
 // ******************************
 // Middleware
@@ -68,11 +39,20 @@ const transporter = nodemailer.createTransport({
 
 
 // ******************************
+// Get difference in dates
+// ******************************
+function date_diff_indays(date1, date2) {
+dt1 = new Date(date1);
+dt2 = new Date(date2);
+return Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate()) ) /(1000 * 60 * 60 * 24));
+}
+
+
+// ******************************
 // Email and Name Validations
 // ******************************
 function validateEmail(emailVal) {
-  emailVal = emailVal.trim()
-  emailVal = emailVal.toLowerCase()
+  emailVal = emailVal.trim().toLowerCase()
   console.log("Email String Validated")
   if (emailVal.endsWith("@student.manchester.ac.uk") || emailVal.endsWith("@manchester.ac.uk")) {
     return true
@@ -80,9 +60,19 @@ function validateEmail(emailVal) {
   return false
 }
 
+function validatePosition(position, positionText) {
+  const positionArray = ['General Secretary',"President", "Other"]
+  if(!positionArray.includes(position)) return false
+  if(position == "Other"){
+    if(positionText){
+      if(positionText.length <1) return false
+    }else return false
+  }
+  return true
+}
+
 function firstLetterCapitalize(string) {
-  string = string.trim()
-  string = string.toLowerCase().split(' ');
+  string = string.trim().toLowerCase().split(' ');
   for (var i = 0; i < string.length; i++) {
     string[i] = string[i].charAt(0).toUpperCase() + string[i].substring(1);
   }
@@ -91,15 +81,10 @@ function firstLetterCapitalize(string) {
 
 function validateName(nameVal) {
   nameVal = nameVal.trim()
-  splitStr = nameVal.toLowerCase().split(' ');
-  for (var i = 0; i < splitStr.length; i++) {
-    splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
-  }
-  splitStr = splitStr.join(' ');
-  if (splitStr.length > 20) {
+  if (nameVal.length > 20 || nameVal.length < 1) {
     return false
   } else {
-    return splitStr;
+    return true;
   }
 }
 
@@ -196,6 +181,8 @@ if(req.params.type=="voter"){
 
 })
 
+
+
 // ******************************
 // Get currently logged in user
 // ******************************
@@ -209,23 +196,168 @@ router.get("/user",ensureAuthenticated, (req, res) => {
       isVerified: req.user.isVerified,
     })
   }else if(req.user.type=="society"){
+    const untilNextSet = date_diff_indays(req.user.society[0].lastSet, new Date())
+    const canChange = untilNextSet > 90 ? true : false
     return res.status(200).json({
       _id: req.user._id,
       name: req.user.name,
       email: req.user.email,
       type: req.user.type,
       isVerified: req.user.isVerified,
-      societyName: req.user.societyName,
+      societyName: req.user.society[0].societyName,
+      canChange: canChange,
       position: req.user.position,
       positionText: req.user.positionText,
+      untilNextSet: untilNextSet
+
     })
   }
 
 })
 
 
+
 // ******************************
-// Get currently logged in user
+// Update settings for users
+// ******************************
+router.post("/update", ensureAuthenticated, (req, res) => {
+  const type = req.body.type
+
+  if(type == "society"){
+
+    let name = req.body.name
+    let societyName = req.body.societyName
+    let positionText = req.body.positionText
+    let position = req.body.position
+    const id = req.user._id
+
+
+    if ( !name || !societyName || !position ) {
+      return res.status(401).json({
+        message: "Please fill in all the fields."
+      });
+    }
+
+     societyName = firstLetterCapitalize(societyName)
+     name = firstLetterCapitalize(name)
+     positionText = firstLetterCapitalize(positionText  || "")
+
+     if(position != "Other"){
+       positionText = ""
+     }
+
+     if(societyName == req.user.society[0].societyName &&
+       name == req.user.name &&
+       position == req.user.position ){
+         if(position == "Other"){
+           if(positionText == req.user.positionText){
+             return res.status(401).json({
+               message: "Please update atleast one column."
+             });
+           }
+         }else{
+           return res.status(401).json({
+             message: "Please update atleast one column."
+           });
+         }
+       }
+
+
+    if (!validateName(name)) {
+      return res.status(401).json({
+        message: "Full name should be between 1 and 20 characters."
+      });
+    }
+
+    if(!validatePosition(position, positionText)){
+      return res.status(401).json({
+        message: "Invalid role chosen."
+      });
+    }
+
+    if(societyName != req.user.society[0].societyName){
+      if(date_diff_indays(req.user.society[0].lastSet, new Date()) <=90){
+        return res.status(424).json({
+          message: "Cannot update society name before 90 days since the last update."
+        });
+      }
+    }
+
+    if (societyName.length <1 || societyName.length>30) {
+      return res.status(401).json({
+        message: "Society name should be between 1 and 30 characters."
+      });
+    }
+
+
+    SocietyUser.findOne({_id: id}).then(user=>{
+      if(!user) {
+        return res.status(424).json({
+          message: "Unable to verify user identity."
+        });
+      }
+
+      const untilNextSet = date_diff_indays(new Date(),req.user.society[0].lastSet)
+      const canChange = untilNextSet > 90 ? true : false
+
+      if(date_diff_indays(user.society[0].lastSet, new Date())> 90){
+        SocietyUser.updateOne({_id:id}, {$set: {
+          position,
+          positionText,
+          name,
+          societyName
+        }}).then(user=>{
+          console.log("Updated society user details :" + req.user.email)
+          return res.status(200).json({
+            message: "Details updated successfully. Society Name couldn't be updated"
+          });
+        }).catch(err=>{
+          console.log("Couldn't execute updateOne1 query for updatinng society")
+          return res.status(424).json({
+            message: "An error occured at the backend. Please try again later."
+          });
+        })
+
+      }else{
+        SocietyUser.updateOne({_id:id}, {$set: {
+          position,
+          positionText,
+          name
+        }}).then(user=>{
+          console.log("Updated society user details :" + req.user.email)
+          return res.status(200).json({
+            message: "Details updated successfully."
+          });
+        }).catch(err=>{
+          console.log("Couldn't execute updateOne2 query for updatinng society")
+          return res.status(424).json({
+            message: "An error occured at the backend. Please try again later."
+          });
+        })
+      }
+
+    }).catch(err=>{
+      console.log("Couldn't execute the findOne query for updating society user.")
+      return res.status(424).json({
+        message: "An error occured at the backend. Please try again later."
+      });
+    })
+
+
+  }else if(type == "voter"){
+
+  }else{
+    return res.status(401).json({
+      message: "Invalid user type. Please try again."
+    });
+  }
+
+
+
+})
+
+// ******************************
+// Resend confirmation email
 // ******************************
 router.post("/resend", (req, res) => {
 
@@ -238,6 +370,8 @@ router.post("/resend", (req, res) => {
       message: "Email cannot be empty"
     });
   }
+
+  email = email.trim().toLowerCase()
 
   if (!validateEmail(email)) {
     return res.status(401).json({
@@ -520,13 +654,12 @@ router.post("/verify", (req, res) => {
 // Sign up for a society account
 // ******************************
 router.post("/signup/society", (req, res) => {
-
-  const email = req.body.email
-  const password = req.body.password
-  const confirmpassword = req.body.confirmPassword
-  const position = req.body.position
-  const positionText = firstLetterCapitalize(req.body.positionText || "")
-  const societyName = firstLetterCapitalize(req.body.societyName)
+  let email = req.body.email
+  let password = req.body.password
+  let confirmpassword = req.body.confirmPassword
+  let position = req.body.position
+  let positionText = req.body.positionText
+  let societyName = req.body.societyName
   let fullname = req.body.fullname
 
   if (!email || !fullname || !password || !confirmpassword || !position || !societyName) {
@@ -535,9 +668,20 @@ router.post("/signup/society", (req, res) => {
     });
   }
 
+   societyName = firstLetterCapitalize(societyName)
+   fullname = firstLetterCapitalize(fullname)
+   email = email.trim().toLowerCase()
+   positionText = firstLetterCapitalize(fullname  || "")
+
   if (password != confirmpassword) {
     return res.status(401).json({
       message: "Password and Confirm Password need to match with each other."
+    });
+  }
+
+  if (societyName.length <1 || societyName.length>30) {
+    return res.status(401).json({
+      message: "Society name should be between 1 and 30 characters."
     });
   }
 
@@ -553,10 +697,15 @@ router.post("/signup/society", (req, res) => {
     });
   }
 
-  fullname = validateName(fullname)
-  if (!fullname) {
+  if (!validateName(fullname)) {
     return res.status(401).json({
-      message: "Full name should be of less than 20 characters."
+      message: "Full name should be between 1 and 30 characters."
+    });
+  }
+
+  if(!validatePosition(position, positionText)){
+    return res.status(401).json({
+      message: "Invalid role chosen."
     });
   }
 
@@ -576,7 +725,10 @@ router.post("/signup/society", (req, res) => {
           password,
           position,
           positionText,
-          societyName
+          society: {
+            societyName,
+            lastSet: new Date()
+          }
         })
 
         bcrypt.genSalt(10, (err, salt) => {
@@ -651,54 +803,15 @@ router.post("/signup/society", (req, res) => {
 })
 
 
-//
-//
-// admin
-//   .auth()
-//   .createUser({
-//     email: email,
-//     emailVerified: false,
-//     password: password,
-//     displayName: fullname,
-//     disabled: false,
-//   })
-//   .then((userRecord) => {
-//       console.log('Successfully created new society user:', userRecord.uid);
-//
-//     admin
-//       .auth()
-//       .generateEmailVerificationLink(email, actionCodeSettings)
-//       .then((link) => {
-
-
-
-//     })
-//
-//     .catch((error) => {
-//       res.status(401).json({
-//         message: error.message
-//       })
-//     });
-//
-// })
-// .catch((error) => {
-//   res.status(401).json({
-//     message: error.message
-//   });
-// });
-
-
-
-
 
 // ******************************
 // Sign up for a voter account
 // ******************************
 router.post("/signup/voter", (req, res) => {
 
-  const email = req.body.email
-  const password = req.body.password
-  const confirmpassword = req.body.confirmpassword
+  let email = req.body.email
+  let password = req.body.password
+  let confirmpassword = req.body.confirmpassword
   let fullname = req.body.fullname
 
   if (!email || !fullname || !password || !confirmpassword) {
@@ -706,6 +819,9 @@ router.post("/signup/voter", (req, res) => {
       message: "Please fill in all the fields."
     });
   }
+
+  email = email.trim().toLowerCase()
+  fullname = firstLetterCapitalize(fullname)
 
   if (password != confirmpassword) {
     return res.status(401).json({
@@ -726,11 +842,9 @@ router.post("/signup/voter", (req, res) => {
     });
   }
 
-
-  fullname = validateName(fullname)
-  if (!fullname) {
+  if (validateName(fullname)) {
     return res.status(401).json({
-      message: "Full name should be of less than 20 characters."
+      message: "Full name should be between 1 and 20 characters."
     });
   }
 
@@ -851,10 +965,11 @@ router.post("/addElection",ensureAuthenticated, (req, res) => {
     candidates[i].category = firstLetterCapitalize(candidates[i].category)
   }
 
+  // Removing the null entries
   categories = categories.filter(item => item);
   candidates = candidates.filter(item => item.name && item.category);
 
-
+  // Checking if candidates have registered for one of the entered categories only
   for(let i=0;i<candidates.length;i++){
     if(categories.includes(candidates[i].category)){
       continue;
@@ -864,7 +979,7 @@ router.post("/addElection",ensureAuthenticated, (req, res) => {
       });
     }
   }
-  console.log(req.user)
+
   const newElection = new Election({hostId: req.user._id,
                       term:"2021-22",
                       society: req.user.societyName,
@@ -893,6 +1008,7 @@ router.post("/addElection",ensureAuthenticated, (req, res) => {
   })
 
 })
+module.exports = router
 
 
 //
@@ -1050,4 +1166,70 @@ router.post("/addElection",ensureAuthenticated, (req, res) => {
 //
 
 
-module.exports = router
+// var admin = require("firebase-admin");
+// var serviceAccount = require("../config/firebaseKEY.json");
+// const cookieParser = require("cookie-parser")
+// const csrf = require("csurf")
+
+// router.use(cookieParser())
+// router.use(csrf({cookie : true}))
+//
+// router.all("*", (req, res, next)=>{
+//   res.cookie("XSRF-TOKEN", req.csrfToken())
+//   next()
+// })
+//
+//  // firebase
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   databaseURL: "https://election-system-db247-default-rtdb.europe-west1.firebasedatabase.app"
+// });
+
+// Initialize Firebase database
+// var db = admin.database();
+// const ref = db.ref("users")
+
+
+// const actionCodeSettings = {
+//   url: 'http://localhost:4200/signup',
+//   handleCodeInApp: true,
+// };
+
+
+
+//
+//
+// admin
+//   .auth()
+//   .createUser({
+//     email: email,
+//     emailVerified: false,
+//     password: password,
+//     displayName: fullname,
+//     disabled: false,
+//   })
+//   .then((userRecord) => {
+//       console.log('Successfully created new society user:', userRecord.uid);
+//
+//     admin
+//       .auth()
+//       .generateEmailVerificationLink(email, actionCodeSettings)
+//       .then((link) => {
+
+
+
+//     })
+//
+//     .catch((error) => {
+//       res.status(401).json({
+//         message: error.message
+//       })
+//     });
+//
+// })
+// .catch((error) => {
+//   res.status(401).json({
+//     message: error.message
+//   });
+// });
