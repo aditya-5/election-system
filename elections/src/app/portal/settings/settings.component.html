@@ -1,0 +1,152 @@
+
+
+<div class="row d-flex justify-content-center">
+  <div class="lds-ring" *ngIf="submitted">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+  <div *ngIf="!submitted" class="col-10 login-image-main"  >
+    <div #Messages></div>
+
+    <div class="row">
+
+      <div class="col-md-12 col-sm-12 col-xs-12 user-login-box">
+
+        <form (ngSubmit)="saveSettings(settingsF)" #settingsF='ngForm' >
+          <div class="d-flex row justify-content-end">
+            <button type="submit" id="createButton" class="btn btn-default mt-4 mb-3" [disabled]="!settingsF.valid">Save Changes</button>
+          </div>
+
+          <div class="mb-3 row">
+            <label for="fname" class="col-sm-2 col-form-label">Name</label>
+            <div class="col-sm-8">
+              <input type="text"  class="form-control" id="fname" name="fname" placeholder="Full Name" ngModel required #fname="ngModel">
+            </div>
+          </div>
+
+
+
+          <div class="mb-3 row">
+            <label for="societyName" class="col-sm-2 col-form-label">Society Name </label>
+            <div class="col-sm-8">
+              <div class="row p-2 info-row">
+                <input type="text" [readonly]='!userData.canChange' name="societyName" ngModel #societyName="ngModel" required [ngClass]="{'form-control-plaintext':!userData.canChange, 'form-control':userData.canChange}" id="societyName">
+              </div>
+              <div class="row p-2 info-row">
+                <span class="info">(can be changed only once every 90 days | Last changed : {{untilNextSet}} day(s) ago )</span>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="mb-3 row">
+            <label for="email" class="col-sm-2 col-form-label">Email</label>
+            <div class="col-sm-8">
+              <input type="text" readonly class="form-control-plaintext" id="email" value="{{userData.email}}">
+            </div>
+          </div>
+
+
+          <div class="mb-3 row ">
+            <label for="verified" class="col-sm-2 col-form-label">Verified</label>
+            <div class="col-sm-8 checkk ">
+
+              <mat-icon *ngIf="userData.isVerified">check_circle</mat-icon>
+              <mat-icon *ngIf="!userData.isVerified">indeterminate_check_box</mat-icon>
+
+            </div>
+          </div>
+
+
+          <div class="mb-3 row">
+            <label for="position" class="col-sm-2 col-form-label">Role</label>
+            <div class="col-sm-8">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio1" value="President" ngModel required #position='ngModel'>
+                <label class="form-check-label" for="inlineRadio1">President</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio2" value="General Secretary" ngModel>
+                <label class="form-check-label" for="inlineRadio2">General Secretary</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" (click)='togglePosition(true)' type="radio" name="position" id="inlineRadio3" value="Other" ngModel>
+                <label class="form-check-label" for="inlineRadio3">Other</label>
+              </div>
+            </div>
+          </div>
+
+
+        <div class="mb-3 row" *ngIf="positionOther">
+          <label for="position" class="col-sm-2 col-form-label">Other Role</label>
+          <div class="col-sm-8">
+            <div class="form-group mb-2" *ngIf="positionOther">
+              <input type="text" class="form-control" placeholder="What is your role in the society?" name="positionText" ngModel #positionText='ngModel' [required]='positionOther'>
+              <span *ngIf="positionText.touched && positionText.invalid" class='help-block'>The role is invalid.</span>
+            </div>
+          </div>
+        </div>
+
+
+        </form>
+        <hr>
+
+        <div class="d-flex row justify-content-end">
+          <button type="submit" id="createButton" class="btn btn-default mt-4 mb-3" [disabled]="!passwordF.valid">Save Password</button>
+        </div>
+
+
+        <form (ngSubmit)="changePassword(passwordF)" #passwordF='ngForm'>
+
+
+          <div class="mb-3 row">
+            <label for="currentpassword" class="col-sm-2 col-form-label">Current Password</label>
+            <div class="col-sm-8">
+              <input type="password"  class="form-control" id="currentpassword" name="currentpassword" ngModel #currentpassword="ngModel">
+            </div>
+          </div>
+
+
+          <div class="mb-3 row">
+            <label for="newpassword" class="col-sm-2 col-form-label">New Password</label>
+            <div class="col-sm-8">
+              <input type="password"  class="form-control" id="newpassword" name="newpassword" [(ngModel)]="newpass" #newpassword="ngModel">
+            </div>
+          </div>
+
+
+          <div class="mb-3 row">
+            <label for="confirmpassword" class="col-sm-2 col-form-label">Confirm Password</label>
+            <div class="col-sm-8">
+                <input type="password"  class="form-control" id="confirmpassword"  name="confirmpassword" [(ngModel)]="confirmpass"  #confirmpassword="ngModel">
+                <span class="info" *ngIf="confirmpassword.touched && checkPassword()">Invalid. The passwords should match and should be of atleast 6 characters.</span>
+            </div>
+          </div>
+
+        </form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </div>
+
+
+    </div>
+  </div>
+</div>

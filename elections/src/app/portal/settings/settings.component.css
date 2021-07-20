@@ -1,0 +1,218 @@
+
+/* Custom */
+
+.tnc{
+  color:grey;
+  font-size:0.8em
+}
+
+
+input.ng-invalid.ng-touched{
+  border:1px red solid;
+}
+
+
+.help-block{
+  color:red;
+  font-size:0.8em;
+  text-align: left;
+}
+
+
+.inline{
+  display:inline-block;
+}
+
+
+
+/* Loader */
+
+.lds-ring {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid #000;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #fff transparent transparent transparent;
+  margin-top:40px
+
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+
+
+
+
+.main-section{
+background-size:100% 100%;
+margin: 0px;
+width: 100%;
+}
+.user-login-header,.login-image-main{
+margin-top: 15px;
+}
+.user-login-header h1{
+font-size: 45px;
+color:#fff;
+}
+.user-login-header p,.last-part p{
+color:#c9c5c7;
+}
+.user-login-header span{
+color:#fff;
+font-weight: 600;
+}
+.login-image-main{
+padding: 30px;
+background-color:#fff;
+border-radius:5px;
+box-shadow: 0 0 5px 0 #fff;
+}
+.user-image-section img{
+background-color: #B56162;
+padding:30px;
+height:150px;
+width:150px;
+border-radius: 50%;
+}
+.user-login-box,.last-part{
+padding:20px;
+}
+.user-login-box button,.user-login-box a:hover{
+background-color: #B56162;
+border:1px solid #B56162;
+width: 100%;
+color:#fff;
+font-weight:600;
+}
+.last-part a{
+text-decoration: none;
+color:#B56162;
+}
+
+/* SCROLL BOX  */
+
+div.scrollmenu {
+  background-color: #333;
+  overflow: auto;
+  white-space: wrap;
+}
+
+div.scrollmenu a {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  padding: 14px;
+  text-decoration: none;
+}
+
+div.scrollmenu a:hover {
+  background-color: #777;
+}
+
+.card {display:inline-block;}
+
+
+select{
+  width: 100%;
+  overflow: hidden;
+}
+
+
+#createButton{
+  background-color: #4CAF50;
+  border-color: 4CAF50;
+  border:none;
+  width:15%
+}
+
+.chars{
+  text-align: right;
+  color: grey;
+  size:0.8em
+}
+
+.binIcon{
+  color:red;
+  cursor: pointer;
+  display:inline-block;
+}
+
+.red{
+  color:red;
+}
+.mat-focused .mat-form-field-label {
+ /*change color of label*/
+ color: black !important;
+}
+
+.mat-form-field-underline {
+ /*change color of underline*/
+ background-color: black !important;
+}
+
+.mat-form-field-ripple {
+ /*change color of underline when focused*/
+ background-color: black !important;;
+}
+
+ .mat-form-field-label {
+ /*change color of label*/
+ color: black !important;
+}
+
+mat-date-range-input input {
+  color: black !important;
+}
+
+
+mat-datepicker-toggle {
+ color: black !important;
+}
+
+body{
+  color:black
+}
+
+.checkk{
+  vertical-align: bottom
+}
+
+.info{
+  color:red;
+  size:0.8em;
+  padding:0;
+  margin-bottom: 0px
+}
+
+.info-row{
+  margin-top:0px;
+}
