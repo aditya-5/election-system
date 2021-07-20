@@ -18,14 +18,33 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule } from '@angular/material/core';
-
+import { CanDeactivateGuard } from "./guards/deactivate.service"
+import { MatListModule } from "@angular/material/list"
+import { MatDividerModule } from "@angular/material/divider"
+import { MatIconModule } from "@angular/material/icon"
+import { MatMenuModule } from "@angular/material/menu"
+import { MatToolbarModule } from "@angular/material/toolbar"
+import { MatSidenavModule } from "@angular/material/sidenav";
+import { SidenavComponent } from './portal/sidenav/sidenav.component';
+import { DashboardComponent } from './portal/dashboard/dashboard.component';
+import { CreateElectionComponent } from './portal/create-election/create-election.component';
+import { MyElectionComponent } from './portal/my-election/my-election.component';
+import { SettingsComponent } from './portal/settings/settings.component'
 
 
  const appRoutes: Routes = [
-   { path: "portal" , component: PortalComponent, canActivate:[AuthGuard]},
+   { path: "portal" , component: PortalComponent,
+   canActivate:[AuthGuard],
+   children:[
+     {path: "create" , component: CreateElectionComponent,canDeactivate: [CanDeactivateGuard]},
+     {path: "home" , component: DashboardComponent},
+     {path: "myelections" , component: MyElectionComponent},
+     {path: "settings" , component: SettingsComponent},
+     {path: "" , redirectTo: 'create', pathMatch: 'full'},
+   ]},
    { path: "society" , component: SocietyComponent, canActivate:[AuthGuardLoggedIn]},
    { path: "voter" , component: VoterComponent, canActivate:[AuthGuardLoggedIn]},
-   { path: "" , component: HomeComponent},
+   { path: "" , component: HomeComponent, pathMatch: 'full', canActivate:[AuthGuardLoggedIn]},
    { path: "**" , redirectTo: "/"},
 ]
 
@@ -37,6 +56,11 @@ import { MatNativeDateModule } from '@angular/material/core';
     HomeComponent,
     SocietyComponent,
     PortalComponent,
+    SidenavComponent,
+    DashboardComponent,
+    CreateElectionComponent,
+    MyElectionComponent,
+    SettingsComponent,
   ],
   imports: [
     BrowserModule,
@@ -50,9 +74,14 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatFormFieldModule,
     MatNativeDateModule,
     ReactiveFormsModule,
-
+    MatListModule,
+    MatDividerModule,
+    MatIconModule,
+    MatMenuModule,
+    MatToolbarModule,
+    MatSidenavModule
   ],
-  providers: [AuthGuard, AuthGuardLoggedIn],
+  providers: [AuthGuard, AuthGuardLoggedIn, CanDeactivateGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
