@@ -21,5 +21,14 @@ export class PortalService {
   }
 
 
+  updateSettings(updateData){
+    return this.http.post(environment.baseURL+"auth/update", updateData, {
+      observe: 'body',
+      withCredentials: true,
+      headers: new HttpHeaders().append('Content-Type', 'application/json')
+    })
+  }
+
+
 
 }

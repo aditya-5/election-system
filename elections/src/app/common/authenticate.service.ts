@@ -30,7 +30,6 @@ export class AuthenticateService {
       headers: new HttpHeaders().append('Content-Type', 'application/json')
     }).pipe(map((response) => {
       this.User.next(response)
-      console.log(response)
       localStorage.setItem("userData", JSON.stringify({ ...response, expirationDate: new Date(new Date().getTime() + this.sessionTime) }))
       this.autoLogout(this.sessionTime)
       this.router.navigate(['portal'])
@@ -38,11 +37,30 @@ export class AuthenticateService {
     }))
   }
 
+  setUserWithoutSubs(){
+    this.http.get(environment.baseURL + "auth/user", {
+      observe: 'body',
+      withCredentials: true,
+      headers: new HttpHeaders().append('Content-Type', 'application/json')
+    }).pipe(map((response) => {
+      this.User.next(response)
+      console.log(response)
+      localStorage.setItem("userData", JSON.stringify({ ...response, expirationDate: new Date(new Date().getTime() + this.sessionTime) }))
+      this.autoLogout(this.sessionTime)
+      return response
+    })).subscribe(resp=>{})
+  }
+
   removeUser(auto: boolean = false) {
+    const type = this.User["type"]
     this.User.next(null)
     localStorage.removeItem("userData");
     if(auto) this.router.navigate(['voter'], {state:{message:"Session timeout. Please re-login to continue.", type:"error"}})
-    else this.router.navigate(['voter'])
+    else {
+      if(type=="voter") this.router.navigate(['voter'], {state:{message:"Thank you for using Electal.", type:"success"}})
+      else this.router.navigate(['society'], {state:{message:"Thank you for using Electal.", type:"success"}})
+
+    }
   }
 
 
