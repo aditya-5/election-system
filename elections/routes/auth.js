@@ -361,7 +361,7 @@ router.post("/update", ensureAuthenticated, (req, res) => {
 // ******************************
 router.post("/resend", (req, res) => {
 
-  const email = req.body.email
+  let email = req.body.email
   const type = req.body.type
 
 
@@ -500,7 +500,7 @@ router.post("/resend", (req, res) => {
                                       <p>
                                         Please use the following confirmation link to verify your account.
                                       </p>
-                                      <a href='${KEYS[NODE_ENV].host}?token=${verifyToken}&type=voter'>Click here to Verify</a>
+                                      <a href='${KEYS[NODE_ENV].host}?token=${verifyToken}&type=society'>Click here to Verify</a>
                                       <p>
                                         Incase the above hyperlink doesn't work, please manually copy and paste the following URL into your browser
                                       </p>
@@ -842,7 +842,7 @@ router.post("/signup/voter", (req, res) => {
     });
   }
 
-  if (validateName(fullname)) {
+  if (!validateName(fullname)) {
     return res.status(401).json({
       message: "Full name should be between 1 and 20 characters."
     });
