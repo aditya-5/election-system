@@ -16,10 +16,14 @@ export class AuthenticateService {
   User = new BehaviorSubject(null);
   private autoLogoutTimer: any;
   sessionTime: number = 60 * 60 * 1000
-
+  userData: any;
 
   constructor(private http: HttpClient,
-    private router: Router) { }
+    private router: Router) {
+      this.User.subscribe(newUserData=>{
+        this.userData = newUserData
+      })
+    }
 
 
   setUser() {
@@ -52,7 +56,7 @@ export class AuthenticateService {
   }
 
   removeUser(auto: boolean = false) {
-    const type = this.User["type"]
+    const type = this.userData.type
     this.User.next(null)
     localStorage.removeItem("userData");
     if(auto) this.router.navigate(['voter'], {state:{message:"Session timeout. Please re-login to continue.", type:"error"}})

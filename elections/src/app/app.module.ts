@@ -39,7 +39,7 @@ import { SettingsComponent } from './portal/settings/settings.component'
      {path: "create" , component: CreateElectionComponent,canDeactivate: [CanDeactivateGuard]},
      {path: "home" , component: DashboardComponent},
      {path: "myelections" , component: MyElectionComponent},
-     {path: "settings" , component: SettingsComponent},
+     {path: "settings" , component: SettingsComponent,canDeactivate: [CanDeactivateGuard]},
      {path: "" , redirectTo: 'create', pathMatch: 'full'},
    ]},
    { path: "society" , component: SocietyComponent, canActivate:[AuthGuardLoggedIn]},
