@@ -12,6 +12,8 @@ const VoterUser = require("../models/VoterUser")
 const Election = require("../models/Election")
 const NODE_ENV = process.env.NODE_ENV || "dev"
 const {ensureAuthenticated}= require('../config/auth')
+const {ensureSocietyAuthenticated}= require('../config/societyAuthenticated')
+
 
 
 
@@ -222,6 +224,8 @@ router.get("/user",ensureAuthenticated, (req, res) => {
 // ******************************
 router.post("/update", ensureAuthenticated, (req, res) => {
   const type = req.body.type
+  const id = req.user._id
+
 
   if(type == "society"){
 
@@ -229,7 +233,6 @@ router.post("/update", ensureAuthenticated, (req, res) => {
     let societyName = req.body.societyName
     let positionText = req.body.positionText
     let position = req.body.position
-    const id = req.user._id
 
 
     if ( !name || !societyName || !position ) {
@@ -275,18 +278,19 @@ router.post("/update", ensureAuthenticated, (req, res) => {
       });
     }
 
+
+    if (societyName.length <1 || societyName.length>30) {
+      return res.status(401).json({
+        message: "Society name should be between 1 and 30 characters."
+      });
+    }
+
     if(societyName != req.user.society[0].societyName){
       if(date_diff_indays(req.user.society[0].lastSet, new Date()) <=90){
         return res.status(424).json({
           message: "Cannot update society name before 90 days since the last update."
         });
       }
-    }
-
-    if (societyName.length <1 || societyName.length>30) {
-      return res.status(401).json({
-        message: "Society name should be between 1 and 30 characters."
-      });
     }
 
 
@@ -297,26 +301,53 @@ router.post("/update", ensureAuthenticated, (req, res) => {
         });
       }
 
-      const untilNextSet = date_diff_indays(new Date(),req.user.society[0].lastSet)
+      const untilNextSet = date_diff_indays(req.user.society[0].lastSet, new Date())
       const canChange = untilNextSet > 90 ? true : false
 
-      if(date_diff_indays(user.society[0].lastSet, new Date())> 90){
+      if(societyName != req.user.society[0].societyName){
+
+        if(canChange){
+
         SocietyUser.updateOne({_id:id}, {$set: {
           position,
           positionText,
           name,
-          societyName
+          society : {societyName,
+                    lastSet : new Date()}
         }}).then(user=>{
-          console.log("Updated society user details :" + req.user.email)
+          console.log("Updated society user details with society name:" + req.user.email)
           return res.status(200).json({
-            message: "Details updated successfully. Society Name couldn't be updated"
+            message: "Details updated successfully."
           });
         }).catch(err=>{
           console.log("Couldn't execute updateOne1 query for updatinng society")
           return res.status(424).json({
+            message: "An errore occured at the backend. Please try again later."
+          });
+        })
+
+
+      }else{
+
+        SocietyUser.updateOne({_id:id}, {$set: {
+          position,
+          positionText,
+          name
+        }}).then(user=>{
+          console.log("Updated society user details with unauthorized society name:" + req.user.email)
+          return res.status(200).json({
+            message: "Details updated successfully. Not allowed to change society name yet."
+          });
+        }).catch(err=>{
+          console.log("Couldn't execute updateOne2 query for updatinng society")
+          return res.status(424).json({
             message: "An error occured at the backend. Please try again later."
           });
         })
+
+      }
+
+
 
       }else{
         SocietyUser.updateOne({_id:id}, {$set: {
@@ -329,7 +360,7 @@ router.post("/update", ensureAuthenticated, (req, res) => {
             message: "Details updated successfully."
           });
         }).catch(err=>{
-          console.log("Couldn't execute updateOne2 query for updatinng society")
+          console.log("Couldn't execute updateOne3 query for updatinng society")
           return res.status(424).json({
             message: "An error occured at the backend. Please try again later."
           });
@@ -345,6 +376,59 @@ router.post("/update", ensureAuthenticated, (req, res) => {
 
 
   }else if(type == "voter"){
+    let name = req.body.name
+
+
+    if ( !name ) {
+      return res.status(401).json({
+        message: "Please fill in all the fields."
+      });
+    }
+
+     name = firstLetterCapitalize(name)
+
+     if (!validateName(name)) {
+       return res.status(401).json({
+         message: "Full name should be between 1 and 20 characters."
+       });
+     }
+
+     if(name == req.user.name){
+       return res.status(401).json({
+         message: "Please update atleast 1 field."
+       });
+     }
+
+     VoterUser.findOne({_id: id})
+     .then(user=>{
+       if(!user){
+         return res.status(424).json({
+           message: "Unable to verify user idenity. Please try again later."
+         });
+       }
+
+       VoterUser.updateOne({_id: id}, {$set : {name}})
+       .then(user=>{
+         console.log("Updated voter user details :" + req.user.email)
+         return res.status(200).json({
+           message: "Details updated successfully."
+         });
+       })
+       .catch(err=>{
+         console.log("Couldn't execute the updateOne query for updating voter user's name.")
+         return res.status(424).json({
+           message: "An error occured at the backend. Please try again later."
+         });
+       })
+
+     })
+     .catch(err=>{
+       console.log("Couldn't execute the findOne query for updating voter user's name.")
+       return res.status(424).json({
+         message: "An error occured at the backend. Please try again later."
+       });
+     })
+
 
   }else{
     return res.status(401).json({
@@ -935,7 +1019,7 @@ router.post("/signup/voter", (req, res) => {
     })
 })
 
-router.post("/addElection",ensureAuthenticated, (req, res) => {
+router.post("/addElection",ensureSocietyAuthenticated, (req, res) => {
   let categories = req.body.categories
   let candidates = req.body.candidates
   let start = req.body.start
