@@ -22,17 +22,17 @@
           <div class="mb-3 row">
             <label for="fname" class="col-sm-2 col-form-label">Name</label>
             <div class="col-sm-8">
-              <input type="text"  class="form-control" id="fname" name="fname" placeholder="Full Name" ngModel required #fname="ngModel">
+              <input type="text"  (change)="unnsavedChanges()" class="form-control" id="fname" name="fname" placeholder="Full Name" ngModel required #fname="ngModel">
             </div>
           </div>
 
 
 
-          <div class="mb-3 row">
+          <div class="mb-3 row" *ngIf="userData.type== 'society'? true: false">
             <label for="societyName" class="col-sm-2 col-form-label">Society Name </label>
             <div class="col-sm-8">
               <div class="row p-2 info-row">
-                <input type="text" [readonly]='!userData.canChange' name="societyName" ngModel #societyName="ngModel" required [ngClass]="{'form-control-plaintext':!userData.canChange, 'form-control':userData.canChange}" id="societyName">
+                <input type="text"  (change)="unnsavedChanges()" [readonly]='!userData.canChange' name="societyName" ngModel #societyName="ngModel" required [ngClass]="{'form-control-plaintext':!userData.canChange, 'form-control':userData.canChange}" id="societyName">
               </div>
               <div class="row p-2 info-row">
                 <span class="info">(can be changed only once every 90 days | Last changed : {{untilNextSet}} day(s) ago )</span>
@@ -60,19 +60,19 @@
           </div>
 
 
-          <div class="mb-3 row">
+          <div class="mb-3 row"  *ngIf="userData.type== 'society'? true: false">
             <label for="position" class="col-sm-2 col-form-label">Role</label>
             <div class="col-sm-8">
               <div class="form-check form-check-inline">
-                <input class="form-check-input" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio1" value="President" ngModel required #position='ngModel'>
+                <input class="form-check-input"  (change)="unnsavedChanges()" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio1" value="President" ngModel required #position='ngModel'>
                 <label class="form-check-label" for="inlineRadio1">President</label>
               </div>
               <div class="form-check form-check-inline">
-                <input class="form-check-input" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio2" value="General Secretary" ngModel>
+                <input class="form-check-input"  (change)="unnsavedChanges()" (click)='togglePosition(false)' type="radio" name="position" id="inlineRadio2" value="General Secretary" ngModel>
                 <label class="form-check-label" for="inlineRadio2">General Secretary</label>
               </div>
               <div class="form-check form-check-inline">
-                <input class="form-check-input" (click)='togglePosition(true)' type="radio" name="position" id="inlineRadio3" value="Other" ngModel>
+                <input class="form-check-input"  (change)="unnsavedChanges()" (click)='togglePosition(true)' type="radio" name="position" id="inlineRadio3" value="Other" ngModel>
                 <label class="form-check-label" for="inlineRadio3">Other</label>
               </div>
             </div>
@@ -83,7 +83,7 @@
           <label for="position" class="col-sm-2 col-form-label">Other Role</label>
           <div class="col-sm-8">
             <div class="form-group mb-2" *ngIf="positionOther">
-              <input type="text" class="form-control" placeholder="What is your role in the society?" name="positionText" ngModel #positionText='ngModel' [required]='positionOther'>
+              <input type="text"  (change)="unnsavedChanges()" class="form-control" placeholder="What is your role in the society?" name="positionText" ngModel #positionText='ngModel' [required]='positionOther'>
               <span *ngIf="positionText.touched && positionText.invalid" class='help-block'>The role is invalid.</span>
             </div>
           </div>
