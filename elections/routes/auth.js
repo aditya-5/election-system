@@ -1044,6 +1044,7 @@ router.post("/addElection",ensureSocietyAuthenticated, (req, res) => {
 
 
   for(let i=0;i<candidates.length;i++){
+    candidates[i].id = crypto.randomBytes(25).toString("hex")
     candidates[i].name = firstLetterCapitalize(candidates[i].name)
     candidates[i].course = firstLetterCapitalize(candidates[i].course)
     candidates[i].category = firstLetterCapitalize(candidates[i].category)

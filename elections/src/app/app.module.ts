@@ -30,23 +30,25 @@ import { DashboardComponent } from './portal/dashboard/dashboard.component';
 import { CreateElectionComponent } from './portal/create-election/create-election.component';
 import { MyElectionComponent } from './portal/my-election/my-election.component';
 import { SettingsComponent } from './portal/settings/settings.component'
+import { AuthGuardSociety } from './guards/auth-guard-society.service';
 
 
  const appRoutes: Routes = [
    { path: "portal" , component: PortalComponent,
    canActivate:[AuthGuard],
    children:[
-     {path: "create" , component: CreateElectionComponent,canDeactivate: [CanDeactivateGuard]},
+     {path: "create" , component: CreateElectionComponent,canDeactivate: [CanDeactivateGuard], canActivate:[AuthGuardSociety]},
      {path: "home" , component: DashboardComponent},
-     {path: "myelections" , component: MyElectionComponent},
+     {path: "myelections" , component: MyElectionComponent, canActivate:[AuthGuardSociety]},
      {path: "settings" , component: SettingsComponent,canDeactivate: [CanDeactivateGuard]},
-     {path: "" , redirectTo: 'create', pathMatch: 'full'},
+     {path: "" , redirectTo: 'home', pathMatch: 'full'},
    ]},
    { path: "society" , component: SocietyComponent, canActivate:[AuthGuardLoggedIn]},
    { path: "voter" , component: VoterComponent, canActivate:[AuthGuardLoggedIn]},
    { path: "" , component: HomeComponent, pathMatch: 'full', canActivate:[AuthGuardLoggedIn]},
    { path: "**" , redirectTo: "/"},
 ]
+
 
 @NgModule({
   declarations: [
@@ -81,7 +83,7 @@ import { SettingsComponent } from './portal/settings/settings.component'
     MatToolbarModule,
     MatSidenavModule
   ],
-  providers: [AuthGuard, AuthGuardLoggedIn, CanDeactivateGuard],
+  providers: [AuthGuard, AuthGuardLoggedIn, CanDeactivateGuard, AuthGuardSociety],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

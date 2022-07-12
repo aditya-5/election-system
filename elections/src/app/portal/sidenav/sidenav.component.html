@@ -7,7 +7,7 @@
     <mat-icon>home</mat-icon> Home</a>
   <a mat-list-item routerLink="create" routerLinkActive = "list-item-active" *ngIf="userData.type =='society'? true: false ">
     <mat-icon>create</mat-icon> Create Election</a>
-  <a mat-list-item routerLink="myelections" routerLinkActive = "list-item-active">
+  <a mat-list-item routerLink="myelections" routerLinkActive = "list-item-active"   *ngIf="userData.type =='society'? true: false ">
     <mat-icon>list</mat-icon> Past Elections</a>
   <a mat-list-item routerLink="settings" routerLinkActive = "list-item-active">
     <mat-icon>settings</mat-icon> Settings</a>
